@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Manager - Správa PDF súborov</title>
+    <style>
+        :root {
+            --color-bg-primary: #fcfcf9;
+            --color-bg-secondary: #ffffff;
+            --color-text-primary: #13343b;
+            --color-text-secondary: #626c7c;
+            --color-primary: #218d8d;
+            --color-primary-hover: #1d747c;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-error: #c0152f;
+            --color-success: #218d8d;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-bg-primary: #1f2121;
+                --color-bg-secondary: #262828;
+                --color-text-primary: #f5f5f5;
+                --color-text-secondary: #a7a9a9;
+                --color-primary: #32b8c6;
+                --color-primary-hover: #2da6b2;
+                --color-border: rgba(119, 124, 124, 0.3);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-text-primary);
+        }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .upload-section {
+            background: var(--color-bg-secondary);
+            border: 2px dashed var(--color-border);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section.dragover {
+            border-color: var(--color-primary);
+            background: rgba(33, 141, 141, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--color-primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(98, 108, 113, 0.15);
+            color: var(--color-text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(98, 108, 113, 0.25);
+        }
+
+        .files-list {
+            margin-bottom: 2rem;
+        }
+
+        .file-item {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-size {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--color-bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        th {
+            background: rgba(33, 141, 141, 0.1);
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="number"],
+        input[type="email"],
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--color-bg-secondary);
+            color: var(--color-text-primary);
+            font-family: inherit;
+        }
+
+        input[type="number"]:focus,
+        input[type="email"]:focus,
+        input[type="text"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .email-section {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(33, 141, 141, 0.1);
+            color: var(--color-success);
+            border: 1px solid var(--color-success);
+        }
+
+        .alert-error {
+            background: rgba(192, 21, 47, 0.1);
+            color: var(--color-error);
+            border: 1px solid var(--color-error);
+        }
+
+        .processing {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(33, 141, 141, 0.2);
+            border-top: 3px solid var(--color-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 PDF Manager</h1>
+        <p class="subtitle">Nahrať PDF súbory, vytvoriť tabuľku a odoslať emailom</p>
+
+        <div id="alertContainer"></div>
+
+        <div class="upload-section" id="uploadSection">
+            <div class="upload-icon">📁</div>
+            <p style="margin-bottom: 1rem;">Pretiahnite PDF súbory sem alebo kliknite na tlačidlo</p>
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept=".pdf" multiple>
+                <label for="fileInput" class="btn">Vybrať PDF súbory</label>
+            </div>
+        </div>
+
+        <div id="filesList" class="files-list hidden"></div>
+
+        <div id="tableSection" class="hidden">
+            <h2 style="margin-bottom: 1rem;">📊 Prehľad PDF súborov</h2>
+            <table id="pdfTable">
+                <thead>
+                    <tr>
+                        <th>Č.</th>
+                        <th>Názov súboru</th>
+                        <th>Rozmer stránky</th>
+                        <th>Počet A4</th>
+                        <th>A4 × Kópie</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+
+            <div class="email-section">
+                <h3 style="margin-bottom: 1.5rem;">✉️ Odoslanie tabuľky emailom</h3>
+                
+                <div class="form-group">
+                    <label for="projectSelect">Výber zakázky (voliteľné):</label>
+                    <select id="projectSelect" onchange="loadProjectData()">
+                        <option value="">-- Vlastné zadanie --</option>
+                        <option value="1" data-number="2024-001" data-name="Most Torysa" data-manager="Ing. Peter Novák">2024-001 - Most Torysa</option>
+                        <option value="2" data-number="2024-002" data-name="Diaľnica D1 Nadjazd" data-manager="Ing. Jana Horváthová">2024-002 - Diaľnica D1 Nadjazd</option>
+                        <option value="3" data-number="2024-003" data-name="Železničný most" data-manager="Ing. Martin Kováč">2024-003 - Železničný most</option>
+                        <option value="4" data-number="2024-004" data-name="Rekonštrukcia mosta" data-manager="Ing. Eva Szabóová">2024-004 - Rekonštrukcia mosta</option>
+                        <option value="5" data-number="2024-005" data-name="Rekonštrukcia mosta bla bla" data-manager="Ing. Lolak">2024-005 - Rekonštrukcia mosta bal bal</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="projectNumber">Číslo zakázky:</label>
+                    <input type="text" id="projectNumber" placeholder="Zadajte číslo zakázky">
+                </div>
+
+                <div class="form-group">
+                    <label for="projectName">Názov zakázky:</label>
+                    <input type="text" id="projectName" placeholder="Zadajte názov zakázky">
+                </div>
+
+                <div class="form-group">
+                    <label for="projectManager">Zodpovedný projektant:</label>
+                    <input type="text" id="projectManager" placeholder="Meno a priezvisko projektanta">
+                </div>
+
+                <div class="form-group">
+                    <label for="copies">Počet kópií:</label>
+                    <input type="number" id="copies" min="1" value="1" placeholder="Zadajte počet kópií" onchange="updateA4Totals()" oninput="updateA4Totals()">
+                </div>
+
+                <div class="form-group">
+                    <label for="printType">Typ tlače:</label>
+                    <select id="printType">
+                        <option value="finalna">Finálna tlač</option>
+                        <option value="pracovna">Pracovná tlač</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email adresa príjemcu:</label>
+                    <input type="email" id="email" value="jakub.tomecko@gmail.com" placeholder="priklad@email.sk" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Správa (voliteľné):</label>
+                    <textarea id="message" rows="4" placeholder="Pridajte vlastnú správu k emailu..."></textarea>
+                </div>
+
+                <button class="btn" onclick="sendEmailViaClient()">Odoslať cez emailového klienta</button>
+                <button class="btn btn-secondary" onclick="resetApp()" style="margin-left: 0.5rem;">Začať znova</button>
+            </div>
+        </div>
+
+        <div id="processingSection" class="processing hidden">
+            <div class="spinner"></div>
+            <p>Spracovávam PDF súbory...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script>
+        let pdfFiles = [];
+
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const filesList = document.getElementById('filesList');
+        const tableSection = document.getElementById('tableSection');
+        const tableBody = document.getElementById('tableBody');
+        const alertContainer = document.getElementById('alertContainer');
+        const processingSection = document.getElementById('processingSection');
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(Array.from(e.target.files));
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) {
+                showAlert('Prosím vyberte aspoň jeden PDF súbor.', 'error');
+                return;
+            }
+
+            pdfFiles = files;
+            displayFilesList();
+            processingSection.classList.remove('hidden');
+            
+            setTimeout(() => {
+                processFiles();
+            }, 500);
+        }
+
+        function displayFilesList() {
+            filesList.innerHTML = '';
+            filesList.classList.remove('hidden');
+            
+            pdfFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">📄 ${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-small btn-secondary" onclick="removeFile(${index})">Odstrániť</button>
+                    </div>
+                `;
+                filesList.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            pdfFiles = Array.from(pdfFiles);
+            pdfFiles.splice(index, 1);
+            
+            if (pdfFiles.length === 0) {
+                filesList.classList.add('hidden');
+                tableSection.classList.add('hidden');
+                fileInput.value = '';
+            } else {
+                displayFilesList();
+                processFiles();
+            }
+        }
+
+        async function processFiles() {
+            tableBody.innerHTML = '';
+            
+            for (let i = 0; i < pdfFiles.length; i++) {
+                const file = pdfFiles[i];
+                
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                    const pages = pdfDoc.getPages();
+                    const firstPage = pages[0];
+                    const { width, height } = firstPage.getSize();
+                    
+                    const widthMM = (width * 0.352778).toFixed(0);
+                    const heightMM = (height * 0.352778).toFixed(0);
+                    const pageSizeStr = `${widthMM} × ${heightMM} mm`;
+                    
+                    const pageArea = widthMM * heightMM;
+                    const a4Area = 210 * 297;
+                    const a4Count = Math.round(pageArea / a4Area);
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${file.name}</td>
+                        <td>${pageSizeStr}</td>
+                        <td>${a4Count} A4</td>
+                        <td class="a4-total-cell">-</td>
+                    `;
+                    tableBody.appendChild(row);
+                } catch (error) {
+                    console.error('Chyba pri spracovaní PDF:', error);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${file.name}</td>
+                        <td colspan="2">Chyba pri čítaní PDF</td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            }
+            
+            processingSection.classList.add('hidden');
+            tableSection.classList.remove('hidden');
+            showAlert(`Úspešne spracovaných ${pdfFiles.length} PDF súborov.`, 'success');
+            updateA4Totals();
+        }
+
+        function loadProjectData() {
+            const projectSelect = document.getElementById('projectSelect');
+            const selectedOption = projectSelect.options[projectSelect.selectedIndex];
+            
+            if (projectSelect.value === '') {
+                return;
+            }
+            
+            const projectNumber = selectedOption.getAttribute('data-number') || '';
+            const projectName = selectedOption.getAttribute('data-name') || '';
+            const projectManager = selectedOption.getAttribute('data-manager') || '';
+            
+            document.getElementById('projectNumber').value = projectNumber;
+            document.getElementById('projectName').value = projectName;
+            document.getElementById('projectManager').value = projectManager;
+        }
+
+        function updateA4Totals() {
+            const copies = parseInt(document.getElementById('copies').value) || 1;
+            const rows = tableBody.querySelectorAll('tr');
+            let grandTotal = 0;
+
+            rows.forEach((row) => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 4) {
+                    const a4Text = cells[3].textContent.trim();
+                    const a4Match = a4Text.match(/(\d+)/);
+                    if (a4Match) {
+                        const a4Count = parseInt(a4Match[1]);
+                        const totalA4 = a4Count * copies;
+                        grandTotal += totalA4;
+                        
+                        const totalCell = row.querySelector('.a4-total-cell');
+                        if (totalCell) {
+                            totalCell.textContent = `${totalA4} A4`;
+                        }
+                    }
+                }
+            });
+
+            let summaryRow = tableBody.querySelector('.summary-row');
+            if (!summaryRow) {
+                summaryRow = document.createElement('tr');
+                summaryRow.className = 'summary-row';
+                summaryRow.style.fontWeight = 'bold';
+                summaryRow.style.background = 'rgba(33, 141, 141, 0.1)';
+                tableBody.appendChild(summaryRow);
+            }
+
+            summaryRow.innerHTML = `
+                <td colspan="4" style="text-align: right; padding-right: 1rem;">CELKOM:</td>
+                <td>${grandTotal} A4</td>
+            `;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function sendEmailViaClient() {
+            const projectName = document.getElementById('projectName').value;
+            const projectManager = document.getElementById('projectManager').value;
+            const projectNumber = document.getElementById('projectNumber').value;
+            const printType = document.getElementById('printType').value;
+            const printTypeText = printType === 'finalna' ? 'Finálna tlač' : 'Pracovná tlač';
+            const copies = document.getElementById('copies').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+
+            if (!email) {
+                showAlert('Prosím zadajte emailovú adresu.', 'error');
+                return;
+            }
+
+            if (!copies || copies < 1) {
+                showAlert('Prosím zadajte platný počet kópií.', 'error');
+                return;
+            }
+
+            const rows = tableBody.querySelectorAll('tr');
+            let tableText = 'PREHĽAD PDF SÚBOROV\n\n';
+            
+            if (projectNumber) {
+                tableText += `Číslo zakázky: ${projectNumber}\n`;
+            }
+            if (projectName) {
+                tableText += `Názov zakázky: ${projectName}\n`;
+            }
+            if (projectManager) {
+                tableText += `Zodpovedný projektant: ${projectManager}\n`;
+            }
+            tableText += `Typ tlače: ${printTypeText}\n`;
+            tableText += '\n';
+            tableText += 'Č. | Názov súboru | Rozmer stránky | Počet A4 | A4 × Kópie\n';
+            tableText += '---|---|---|---|---\n';
+            
+            rows.forEach((row) => {
+                if (!row.classList.contains('summary-row')) {
+                    const cells = row.querySelectorAll('td');
+                    const rowData = Array.from(cells).map(cell => cell.textContent.trim()).join(' | ');
+                    tableText += rowData + '\n';
+                }
+            });
+
+            const summaryRow = tableBody.querySelector('.summary-row');
+            if (summaryRow) {
+                const cells = summaryRow.querySelectorAll('td');
+                const totalA4 = cells[1] ? cells[1].textContent.trim() : '';
+                tableText += `\nCELKOM: ${totalA4}\n`;
+            }
+            
+            tableText += `\nPočet požadovaných kópií: ${copies}`;
+
+            let emailSubject = 'Prehľad PDF súborov';
+            if (projectNumber && projectName) {
+                emailSubject = `${projectNumber} - ${projectName} (${copies} kópií)`;
+            } else if (projectNumber) {
+                emailSubject = `${projectNumber} (${copies} kópií)`;
+            } else if (projectName) {
+                emailSubject = `${projectName} (${copies} kópií)`;
+            } else {
+                emailSubject = `Prehľad PDF súborov (${copies} kópií)`;
+            }
+            const emailBody = `${message ? message + '\n\n' : ''}Dobrý deň,
+
+${tableText}
+
+S pozdravom`;
+
+            const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+            window.location.href = mailtoLink;
+            
+            showAlert(`Email pripravený pre ${email}.`, 'success');
+        }
+
+        function resetApp() {
+            pdfFiles = [];
+            fileInput.value = '';
+            filesList.classList.add('hidden');
+            tableSection.classList.add('hidden');
+            tableBody.innerHTML = '';
+            document.getElementById('projectSelect').value = '';
+            document.getElementById('projectNumber').value = '';
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectManager').value = '';
+            document.getElementById('printType').value = 'finalna';
+            document.getElementById('copies').value = '1';
+            document.getElementById('email').value = 'jakub.tomecko@gmail.com';
+            document.getElementById('message').value = '';
+            alertContainer.innerHTML = '';
+        }
+
+        function showAlert(message, type) {
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
