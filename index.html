@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Manager - Správa PDF súborov</title>
+    <title>Plotr</title>
     <style>
         :root {
             --color-bg-primary: #fcfcf9;
@@ -275,8 +275,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>📄 PDF Manager</h1>
-        <p class="subtitle">Nahrať PDF súbory, vytvoriť tabuľku a odoslať emailom</p>
+        <div style="text-align: center;">
+            <h1>PLOTR β</h1>
+            <p class="subtitle">Print Like Orc, Then Relax</p>
+        </div>
 
         <div id="alertContainer"></div>
 
@@ -292,7 +294,7 @@
         <div id="filesList" class="files-list hidden"></div>
 
         <div id="tableSection" class="hidden">
-            <h2 style="margin-bottom: 1rem;">📊 Prehľad PDF súborov</h2>
+            <h2 style="margin-bottom: 1rem;">Prehľad PDF súborov</h2>
             <table id="pdfTable">
                 <thead>
                     <tr>
@@ -307,17 +309,14 @@
             </table>
 
             <div class="email-section">
-                <h3 style="margin-bottom: 1.5rem;">✉️ Odoslanie tabuľky emailom</h3>
+                <h3 style="margin-bottom: 1.5rem;">Odoslanie tabuľky emailom</h3>
                 
                 <div class="form-group">
-                    <label for="projectSelect">Výber zakázky (voliteľné):</label>
+                    <label for="projectSelect">Výber zakázky:</label>
                     <select id="projectSelect" onchange="loadProjectData()">
                         <option value="">-- Vlastné zadanie --</option>
-                        <option value="1" data-number="2024-001" data-name="Most Torysa" data-manager="Ing. Peter Novák">2024-001 - Most Torysa</option>
-                        <option value="2" data-number="2024-002" data-name="Diaľnica D1 Nadjazd" data-manager="Ing. Jana Horváthová">2024-002 - Diaľnica D1 Nadjazd</option>
-                        <option value="3" data-number="2024-003" data-name="Železničný most" data-manager="Ing. Martin Kováč">2024-003 - Železničný most</option>
-                        <option value="4" data-number="2024-004" data-name="Rekonštrukcia mosta" data-manager="Ing. Eva Szabóová">2024-004 - Rekonštrukcia mosta</option>
-                        <option value="5" data-number="2024-005" data-name="Rekonštrukcia mosta bla bla" data-manager="Ing. Lolak">2024-005 - Rekonštrukcia mosta bal bal</option>
+                        <option value="1" data-number="9103-06" data-name="R4 Prešov - severný obchvat (km 4,3-14,5)" data-manager="Ing. B. Juhas">R4 Prešov - severný obchvat</option>
+                        <option value="2" data-number="D25-031" data-name="I/12 Běchovice - Úvaly" data-manager="Ing. T. Honc">I/12 Běchovice - Úvaly</option>
                     </select>
                 </div>
 
@@ -351,7 +350,7 @@
 
                 <div class="form-group">
                     <label for="email">Email adresa príjemcu:</label>
-                    <input type="email" id="email" value="jakub.tomecko@gmail.com" placeholder="priklad@email.sk" required>
+                    <input type="email" id="email" value="mudrakova@dopravoprojekt.sk" placeholder="priklad@email.sk" required>
                 </div>
 
                 <div class="form-group">
@@ -368,6 +367,10 @@
             <div class="spinner"></div>
             <p>Spracovávam PDF súbory...</p>
         </div>
+
+        <footer style="text-align: center;">
+            <p class="subtitle" style="margin-top: 1rem;">VibeCode by Jakub 🤖</p>
+        </footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -625,11 +628,10 @@
             }
             const emailBody = `Dobrý deň,
 
-posielám Vám Výkaz plotrovania pre zákazku č. ${projectNumber} - ${projectName}.
+posielám Vám Výkaz plotrovania pre zákazku č.: ${projectNumber} - ${projectName}.
 
 ${tableText}
-${message ? 'POZNÁMKA\n' + message + '' : ''}
-
+${message ? 'POZNÁMKA\n' + message + '\n' : ''}
 Ďakujem a prajem pekný deň.`;
 
             const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
