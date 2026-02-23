@@ -10,11 +10,11 @@
             --color-bg-secondary: #ffffff;
             --color-text-primary: #13343b;
             --color-text-secondary: #626c7c;
-            --color-primary: #218d8d;
-            --color-primary-hover: #1d747c;
+            --color-primary: #164f8f;
+            --color-primary-hover: #0B5BA4;
             --color-border: rgba(94, 82, 64, 0.2);
             --color-error: #c0152f;
-            --color-success: #218d8d;
+            --color-success: #164f8f;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -23,8 +23,8 @@
                 --color-bg-secondary: #262828;
                 --color-text-primary: #f5f5f5;
                 --color-text-secondary: #a7a9a9;
-                --color-primary: #32b8c6;
-                --color-primary-hover: #2da6b2;
+                --color-primary: #164f8f;
+                --color-primary-hover: #0B5BA4;
                 --color-border: rgba(119, 124, 124, 0.3);
             }
         }
@@ -180,7 +180,7 @@
         }
 
         th {
-            background: rgba(33, 141, 141, 0.1);
+            background: rgba(22, 79, 143, 0.2);
             font-weight: 600;
         }
 
@@ -241,7 +241,7 @@
         }
 
         .alert-success {
-            background: rgba(33, 141, 141, 0.1);
+            background: rgba(22, 79, 143, 0.2);
             color: var(--color-success);
             border: 1px solid var(--color-success);
         }
@@ -355,7 +355,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="message">Správa (voliteľné):</label>
+                    <label for="message">Poznámka (voliteľné):</label>
                     <textarea id="message" rows="4" placeholder="Pridajte vlastnú správu k emailu..."></textarea>
                 </div>
 
@@ -544,7 +544,7 @@
                 summaryRow = document.createElement('tr');
                 summaryRow.className = 'summary-row';
                 summaryRow.style.fontWeight = 'bold';
-                summaryRow.style.background = 'rgba(33, 141, 141, 0.1)';
+                summaryRow.style.background = 'rgba(22, 79, 143, 0.2)';
                 tableBody.appendChild(summaryRow);
             }
 
@@ -581,7 +581,7 @@
             }
 
             const rows = tableBody.querySelectorAll('tr');
-            let tableText = 'PREHĽAD PDF SÚBOROV\n\n';
+            let tableText = 'INFORMÁCIE O ZÁKAZKE A TLAČI\n\n';
             
             if (projectNumber) {
                 tableText += `Číslo zakázky: ${projectNumber}\n`;
@@ -593,9 +593,10 @@
                 tableText += `Zodpovedný projektant: ${projectManager}\n`;
             }
             tableText += `Typ tlače: ${printTypeText}\n`;
-            tableText += '\n';
-            tableText += 'Č. | Názov súboru | Rozmer stránky | Počet A4 | A4 × Kópie\n';
-            tableText += '---|---|---|---|---\n';
+            tableText += `Počet požadovaných kópií: ${copies}`;
+            tableText += '\n\n';
+            tableText += 'PREHĽAD PDF SÚBOROV\n\n';
+            tableText += 'Č. | Názov súboru | Rozmer výkresu | Počet A4 | Spolu A4\n';
             
             rows.forEach((row) => {
                 if (!row.classList.contains('summary-row')) {
@@ -609,26 +610,27 @@
             if (summaryRow) {
                 const cells = summaryRow.querySelectorAll('td');
                 const totalA4 = cells[1] ? cells[1].textContent.trim() : '';
-                tableText += `\nCELKOM: ${totalA4}\n`;
+                tableText += `\nCELKOVÝ POČET A4: ${totalA4}\n`;
             }
-            
-            tableText += `\nPočet požadovaných kópií: ${copies}`;
 
-            let emailSubject = 'Prehľad PDF súborov';
+            let emailSubject = 'Výkaz plotrovanie';
             if (projectNumber && projectName) {
-                emailSubject = `${projectNumber} - ${projectName} (${copies} kópií)`;
+                emailSubject = `Výkaz plotrovania: ${projectNumber} - ${projectName} (${copies} kópií)`;
             } else if (projectNumber) {
-                emailSubject = `${projectNumber} (${copies} kópií)`;
+                emailSubject = `Výkaz plotrovania: ${projectNumber} (${copies} kópií)`;
             } else if (projectName) {
-                emailSubject = `${projectName} (${copies} kópií)`;
+                emailSubject = `Výkaz plotrovania: ${projectName} (${copies} kópií)`;
             } else {
-                emailSubject = `Prehľad PDF súborov (${copies} kópií)`;
+                emailSubject = `Výkaz plotrovania: (${copies} kópií)`;
             }
-            const emailBody = `${message ? message + '\n\n' : ''}Dobrý deň,
+            const emailBody = `Dobrý deň,
+
+posielám Vám Výkaz plotrovania pre zákazku č. ${projectNumber} - ${projectName}.
 
 ${tableText}
+${message ? 'POZNÁMKA\n' + message + '' : ''}
 
-S pozdravom`;
+Ďakujem a prajem pekný deň.`;
 
             const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
             window.location.href = mailtoLink;
