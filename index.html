@@ -349,9 +349,10 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <!-- Skrytý emailový input, ktorý sa automaticky naplní a umožní editáciu -->
+                <div class="form-group" hidden>
                     <label for="email">Email adresa príjemcu:</label>
-                    <input type="email" id="email" value="mudrakova@dopravoprojekt.sk" placeholder="priklad@email.sk" required>
+                    <input type="email" id="email" readonly required>
                 </div>
 
                 <div class="form-group">
@@ -359,8 +360,10 @@
                     <textarea id="message" rows="4" placeholder="Pridajte vlastnú správu k emailu..."></textarea>
                 </div>
 
+                <div style="text-align: center;">
                 <button class="btn" onclick="sendEmailViaClient()">Odoslať cez emailového klienta</button>
                 <button class="btn btn-secondary" onclick="resetApp()" style="margin-left: 0.5rem;">Začať znova</button>
+                </div>
             </div>
         </div>
 
@@ -373,6 +376,19 @@
             <a href="https://github.com/tomecjak" style="margin-top: 1rem; color: var(--color-text-secondary); text-decoration: none;">VibeCode by Jakub 🤖</a>
         </footer>
     </div>
+
+        <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('email');
+        const user = 'mudrakova';      // Tu zadaj užívateľa
+        const domain = 'dopravoprojekt';       // Tu doménu
+        const tld = 'sk';            // Tu TLD
+        const email = user + '@' + domain + '.' + tld;
+        
+        input.value = email;
+        input.removeAttribute('readonly');  // Umožní editáciu ak treba
+    });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script>
@@ -642,6 +658,12 @@ ${message ? 'POZNÁMKA\n' + message + '\n' : ''}
         }
 
         function resetApp() {
+            const input = document.getElementById('email');
+            const user = 'mudrakova';      // Tu zadaj užívateľa
+            const domain = 'dopravoprojekt';       // Tu doménu
+            const tld = 'sk';            // Tu TLD
+            const email = user + '@' + domain + '.' + tld;
+        
             pdfFiles = [];
             fileInput.value = '';
             filesList.classList.add('hidden');
@@ -653,9 +675,11 @@ ${message ? 'POZNÁMKA\n' + message + '\n' : ''}
             document.getElementById('projectManager').value = '';
             document.getElementById('printType').value = 'finalna';
             document.getElementById('copies').value = '1';
-            document.getElementById('email').value = 'jakub.tomecko@gmail.com';
+            document.getElementById('email').value = email;
             document.getElementById('message').value = '';
             alertContainer.innerHTML = '';
+
+            input.removeAttribute('readonly');  // Umožní editáciu ak treba
         }
 
         function showAlert(message, type) {
