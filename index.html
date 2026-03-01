@@ -46,7 +46,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
@@ -127,6 +127,24 @@
             background: rgba(98, 108, 113, 0.25);
         }
 
+        .btn-success {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-danger {
+            background: var(--color-error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #a0122a;
+        }
+
         .files-list {
             margin-bottom: 2rem;
         }
@@ -162,8 +180,17 @@
         }
 
         .btn-small {
-            padding: 6px 12px;
+            padding: 8px 12px;
             font-size: 0.875rem;
+        }
+
+        .table-section {
+            margin-bottom: 2rem;
+        }
+
+        .table-section h2 {
+            margin-bottom: 1rem;
+            color: var(--color-text-primary);
         }
 
         table {
@@ -188,6 +215,11 @@
 
         tr:last-child td {
             border-bottom: none;
+        }
+
+        .summary-row {
+            font-weight: bold;
+            background: rgba(22, 79, 143, 0.2);
         }
 
         .form-group {
@@ -273,6 +305,12 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -296,19 +334,39 @@
         <div id="filesList" class="files-list hidden"></div>
 
         <div id="tableSection" class="hidden">
-            <h2 style="margin-bottom: 1rem;">Prehľad PDF súborov</h2>
-            <table id="pdfTable">
-                <thead>
-                    <tr>
-                        <th>Č.</th>
-                        <th>Názov súboru</th>
-                        <th>Rozmer stránky</th>
-                        <th>Počet A4</th>
-                        <th>A4 × Kópie</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+            <div class="table-section" id="standardTableSection">
+                <h2>REPROGRAFICKÉ PRÁCE</h2>
+                <table id="standardTable">
+                    <thead>
+                        <tr>
+                            <th>Č.</th>
+                            <th>Názov súboru</th>
+                            <th>Rozmer</th>
+                            <th>Počet stránok</th>
+                            <th>Formát</th>
+                            <th>Spolu</th>
+                        </tr>
+                    </thead>
+                    <tbody id="standardTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="table-section" id="otherTableSection">
+                <h2>PLOTROVACIE PRÁCE</h2>
+                <table id="otherTable">
+                    <thead>
+                        <tr>
+                            <th>Č.</th>
+                            <th>Názov súboru</th>
+                            <th>Rozmer</th>
+                            <th>Počet stránok</th>
+                            <th>Formát</th>
+                            <th>Spolu</th>
+                        </tr>
+                    </thead>
+                    <tbody id="otherTableBody"></tbody>
+                </table>
+            </div>
 
             <div class="email-section">
                 <h3 style="margin-bottom: 1.5rem;">Odoslanie tabuľky emailom</h3>
@@ -317,8 +375,6 @@
                     <label for="projectSelect">Výber zakázky:</label>
                     <select id="projectSelect" onchange="loadProjectData()">
                         <option value="">-- Vlastné zadanie --</option>
-                        <option value="1" data-number="9103-06" data-name="R4 Prešov - severný obchvat (km 4,3-14,5)" data-manager="Ing. B. Juhas">R4 Prešov - severný obchvat</option>
-                        <option value="2" data-number="D25-031" data-name="I/12 Běchovice - Úvaly" data-manager="Ing. T. Honc">I/12 Běchovice - Úvaly</option>
                     </select>
                 </div>
 
@@ -338,6 +394,16 @@
                 </div>
 
                 <div class="form-group">
+                    <div class="button-group">
+                        <button class="btn btn-success btn-small" onclick="saveProject()">Uložiť zakázku</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteSelectedProject()" id="deleteProjectBtn" style="display: none;">Vymazať zakázku</button>
+                    </div>
+                    <small style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">
+                        Zakázky sa ukladajú lokálne a po uložení sa zobrazia vo výbere zakázok
+                    </small>
+                </div>
+
+                <div class="form-group">
                     <label for="copies">Počet kópií:</label>
                     <input type="number" id="copies" min="1" value="1" placeholder="Zadajte počet kópií" onchange="updateA4Totals()" oninput="updateA4Totals()">
                 </div>
@@ -350,7 +416,6 @@
                     </select>
                 </div>
 
-                <!-- Skrytý emailový input, ktorý sa automaticky naplní a umožní editáciu -->
                 <div class="form-group" hidden>
                     <label for="email">Email adresa príjemcu:</label>
                     <input type="email" id="email" readonly required>
@@ -362,8 +427,8 @@
                 </div>
 
                 <div style="text-align: center;">
-                <button class="btn" onclick="sendEmailViaClient()">Odoslať cez emailového klienta</button>
-                <button class="btn btn-secondary" onclick="resetApp()" style="margin-left: 0.5rem;">Začať znova</button>
+                    <button class="btn" onclick="sendEmailViaClient()">Odoslať cez emailového klienta</button>
+                    <button class="btn btn-secondary" onclick="resetApp()" style="margin-left: 0.5rem;">Začať znova</button>
                 </div>
             </div>
         </div>
@@ -378,30 +443,145 @@
         </footer>
     </div>
 
-        <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const input = document.getElementById('email');
-        const user = 'mudrakova';      // Tu zadaj užívateľa
-        const domain = 'dopravoprojekt';       // Tu doménu
-        const tld = 'sk';            // Tu TLD
-        const email = user + '@' + domain + '.' + tld;
-        
-        input.value = email;
-        input.removeAttribute('readonly');  // Umožní editáciu ak treba
-    });
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('email');
+            const user = 'mudrakova';
+            const domain = 'dopravoprojekt';
+            const tld = 'sk';
+            const email = user + '@' + domain + '.' + tld;
+            
+            input.value = email;
+            input.removeAttribute('readonly');
+            
+            loadSavedProjects();
+        });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script>
         let pdfFiles = [];
+        let pdfData = [];
 
         const fileInput = document.getElementById('fileInput');
         const uploadSection = document.getElementById('uploadSection');
         const filesList = document.getElementById('filesList');
         const tableSection = document.getElementById('tableSection');
-        const tableBody = document.getElementById('tableBody');
+        const standardTableBody = document.getElementById('standardTableBody');
+        const otherTableBody = document.getElementById('otherTableBody');
+        const standardTableSection = document.getElementById('standardTableSection');
+        const otherTableSection = document.getElementById('otherTableSection');
         const alertContainer = document.getElementById('alertContainer');
         const processingSection = document.getElementById('processingSection');
+
+        function getSavedProjects() {
+            const saved = localStorage.getItem('plotr_projects');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        function setSavedProjects(projects) {
+            localStorage.setItem('plotr_projects', JSON.stringify(projects));
+        }
+
+        function loadSavedProjects() {
+            const projects = getSavedProjects();
+            const projectSelect = document.getElementById('projectSelect');
+            
+            while (projectSelect.options.length > 1) {
+                projectSelect.remove(1);
+            }
+            
+            projects.forEach((project, index) => {
+                const option = document.createElement('option');
+                option.value = `saved_${index}`;
+                option.textContent = `${project.number} - ${project.name}`;
+                option.setAttribute('data-number', project.number);
+                option.setAttribute('data-name', project.name);
+                option.setAttribute('data-manager', project.manager);
+                projectSelect.appendChild(option);
+            });
+        }
+
+        function saveProject() {
+            const projectNumber = document.getElementById('projectNumber').value.trim();
+            const projectName = document.getElementById('projectName').value.trim();
+            const projectManager = document.getElementById('projectManager').value.trim();
+            
+            if (!projectNumber || !projectName || !projectManager) {
+                showAlert('Prosím vyplňte všetky polia (číslo, názov, projektant).', 'error');
+                return;
+            }
+            
+            const projects = getSavedProjects();
+            const existingIndex = projects.findIndex(p => 
+                p.number === projectNumber && p.name === projectName
+            );
+            
+            if (existingIndex !== -1) {
+                projects[existingIndex] = {
+                    number: projectNumber,
+                    name: projectName,
+                    manager: projectManager
+                };
+                showAlert('Zakázka bola aktualizovaná.', 'success');
+            } else {
+                projects.push({
+                    number: projectNumber,
+                    name: projectName,
+                    manager: projectManager
+                });
+                showAlert('Zakázka bola úspešne uložená.', 'success');
+            }
+            
+            setSavedProjects(projects);
+            loadSavedProjects();
+            
+            const projectSelect = document.getElementById('projectSelect');
+            const newIndex = projects.length - 1;
+            projectSelect.value = existingIndex !== -1 ? `saved_${existingIndex}` : `saved_${newIndex}`;
+            
+            updateDeleteButton();
+        }
+
+        function deleteSelectedProject() {
+            const projectSelect = document.getElementById('projectSelect');
+            const selectedValue = projectSelect.value;
+            
+            if (!selectedValue || !selectedValue.startsWith('saved_')) {
+                showAlert('Vyberte uloženú zakázku na vymazanie.', 'error');
+                return;
+            }
+            
+            if (!confirm('Naozaj chcete vymazať túto zakázku?')) {
+                return;
+            }
+            
+            const index = parseInt(selectedValue.replace('saved_', ''));
+            const projects = getSavedProjects();
+            
+            projects.splice(index, 1);
+            setSavedProjects(projects);
+            loadSavedProjects();
+            
+            projectSelect.value = '';
+            document.getElementById('projectNumber').value = '';
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectManager').value = '';
+            
+            updateDeleteButton();
+            showAlert('Zakázka bola vymazaná.', 'success');
+        }
+
+        function updateDeleteButton() {
+            const projectSelect = document.getElementById('projectSelect');
+            const deleteBtn = document.getElementById('deleteProjectBtn');
+            
+            if (projectSelect.value && projectSelect.value.startsWith('saved_')) {
+                deleteBtn.style.display = 'inline-block';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+        }
 
         uploadSection.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -472,8 +652,32 @@
             }
         }
 
+        function isStandardFormat(widthMM, heightMM) {
+            const tolerance = 10;
+            
+            const formats = [
+                { w: 210, h: 297, name: 'A4' },
+                { w: 297, h: 210, name: 'A4' },
+                { w: 297, h: 420, name: 'A3' },
+                { w: 420, h: 297, name: 'A3' }
+            ];
+            
+            for (let format of formats) {
+                if (Math.abs(widthMM - format.w) <= tolerance && Math.abs(heightMM - format.h) <= tolerance) {
+                    return { isStandard: true, formatName: format.name };
+                }
+            }
+            
+            return { isStandard: false, formatName: null };
+        }
+
         async function processFiles() {
-            tableBody.innerHTML = '';
+            standardTableBody.innerHTML = '';
+            otherTableBody.innerHTML = '';
+            pdfData = [];
+            
+            let standardIndex = 1;
+            let otherIndex = 1;
             
             for (let i = 0; i < pdfFiles.length; i++) {
                 const file = pdfFiles[i];
@@ -482,36 +686,82 @@
                     const arrayBuffer = await file.arrayBuffer();
                     const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
                     const pages = pdfDoc.getPages();
+                    const pageCount = pages.length;
                     const firstPage = pages[0];
                     const { width, height } = firstPage.getSize();
                     
-                    const widthMM = (width * 0.352778).toFixed(0);
-                    const heightMM = (height * 0.352778).toFixed(0);
+                    const widthMM = Math.round(width * 0.352778);
+                    const heightMM = Math.round(height * 0.352778);
                     const pageSizeStr = `${widthMM} × ${heightMM} mm`;
                     
                     const pageArea = widthMM * heightMM;
                     const a4Area = 210 * 297;
                     const a4Count = Math.round(pageArea / a4Area);
                     
+                    const formatCheck = isStandardFormat(widthMM, heightMM);
+                    
+                    const data = {
+                        fileName: file.name,
+                        pageSize: pageSizeStr,
+                        pageCount: pageCount,
+                        a4Count: a4Count,
+                        widthMM: widthMM,
+                        heightMM: heightMM,
+                        isStandard: formatCheck.isStandard,
+                        formatName: formatCheck.formatName
+                    };
+                    
+                    pdfData.push(data);
+                    
                     const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${i + 1}</td>
-                        <td>${file.name}</td>
-                        <td>${pageSizeStr}</td>
-                        <td>${a4Count} A4</td>
-                        <td class="a4-total-cell">-</td>
-                    `;
-                    tableBody.appendChild(row);
+                    
+                    if (formatCheck.isStandard) {
+                        row.innerHTML = `
+                            <td>${standardIndex}</td>
+                            <td>${file.name}</td>
+                            <td>${pageSizeStr} (${formatCheck.formatName})</td>
+                            <td>${pageCount}</td>
+                            <td>${a4Count}x${formatCheck.formatName}</td>
+                            <td class="a4-total-cell">-</td>
+                        `;
+                        standardTableBody.appendChild(row);
+                        standardIndex++;
+                    } else {
+                        row.innerHTML = `
+                            <td>${otherIndex}</td>
+                            <td>${file.name}</td>
+                            <td>${pageSizeStr}</td>
+                            <td>${pageCount}</td>
+                            <td>${a4Count}xA4</td>
+                            <td class="a4-total-cell">-</td>
+                        `;
+                        otherTableBody.appendChild(row);
+                        otherIndex++;
+                    }
+                    
                 } catch (error) {
                     console.error('Chyba pri spracovaní PDF:', error);
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${i + 1}</td>
+                        <td>${otherIndex}</td>
                         <td>${file.name}</td>
-                        <td colspan="2">Chyba pri čítaní PDF</td>
+                        <td colspan="4">Chyba pri čítaní PDF</td>
                     `;
-                    tableBody.appendChild(row);
+                    otherTableBody.appendChild(row);
+                    otherIndex++;
                 }
+            }
+            
+            if (standardTableBody.children.length === 0) {
+                standardTableSection.classList.add('hidden');
+            } else {
+                standardTableSection.classList.remove('hidden');
+            }
+            
+            if (otherTableBody.children.length === 0) {
+                otherTableSection.classList.add('hidden');
+            } else {
+                otherTableSection.classList.remove('hidden');
             }
             
             processingSection.classList.add('hidden');
@@ -525,6 +775,10 @@
             const selectedOption = projectSelect.options[projectSelect.selectedIndex];
             
             if (projectSelect.value === '') {
+                document.getElementById('projectNumber').value = '';
+                document.getElementById('projectName').value = '';
+                document.getElementById('projectManager').value = '';
+                updateDeleteButton();
                 return;
             }
             
@@ -535,43 +789,59 @@
             document.getElementById('projectNumber').value = projectNumber;
             document.getElementById('projectName').value = projectName;
             document.getElementById('projectManager').value = projectManager;
+            
+            updateDeleteButton();
         }
 
         function updateA4Totals() {
             const copies = parseInt(document.getElementById('copies').value) || 1;
-            const rows = tableBody.querySelectorAll('tr');
-            let grandTotal = 0;
-
-            rows.forEach((row) => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 4) {
-                    const a4Text = cells[3].textContent.trim();
-                    const a4Match = a4Text.match(/(\d+)/);
-                    if (a4Match) {
-                        const a4Count = parseInt(a4Match[1]);
-                        const totalA4 = a4Count * copies;
-                        grandTotal += totalA4;
-                        
-                        const totalCell = row.querySelector('.a4-total-cell');
-                        if (totalCell) {
-                            totalCell.textContent = `${totalA4} A4`;
-                        }
+            
+            let standardTotal = 0;
+            let otherTotal = 0;
+            
+            const standardRows = standardTableBody.querySelectorAll('tr:not(.summary-row)');
+            standardRows.forEach((row, index) => {
+                const data = pdfData.find(d => d.isStandard && pdfData.filter(p => p.isStandard).indexOf(d) === index);
+                if (data) {
+                    const totalA4 = data.a4Count * data.pageCount * copies;
+                    standardTotal += totalA4;
+                    
+                    const totalCell = row.querySelector('.a4-total-cell');
+                    if (totalCell) {
+                        totalCell.textContent = `${totalA4}xA4`;
                     }
                 }
             });
+            
+            const otherRows = otherTableBody.querySelectorAll('tr:not(.summary-row)');
+            otherRows.forEach((row, index) => {
+                const data = pdfData.find(d => !d.isStandard && pdfData.filter(p => !p.isStandard).indexOf(d) === index);
+                if (data) {
+                    const totalA4 = data.a4Count * data.pageCount * copies;
+                    otherTotal += totalA4;
+                    
+                    const totalCell = row.querySelector('.a4-total-cell');
+                    if (totalCell) {
+                        totalCell.textContent = `${totalA4}xA4`;
+                    }
+                }
+            });
+            
+            updateSummaryRow(standardTableBody, standardTotal);
+            updateSummaryRow(otherTableBody, otherTotal);
+        }
 
+        function updateSummaryRow(tableBody, total) {
             let summaryRow = tableBody.querySelector('.summary-row');
             if (!summaryRow) {
                 summaryRow = document.createElement('tr');
                 summaryRow.className = 'summary-row';
-                summaryRow.style.fontWeight = 'bold';
-                summaryRow.style.background = 'rgba(22, 79, 143, 0.2)';
                 tableBody.appendChild(summaryRow);
             }
 
             summaryRow.innerHTML = `
-                <td colspan="4" style="text-align: right; padding-right: 1rem;">CELKOM:</td>
-                <td>${grandTotal} A4</td>
+                <td colspan="5" style="text-align: right; padding-right: 1rem;">CELKOM:</td>
+                <td>${total}xA4</td>
             `;
         }
 
@@ -601,75 +871,97 @@
                 return;
             }
 
-            const rows = tableBody.querySelectorAll('tr');
-            let tableText = 'INFORMÁCIE O ZÁKAZKE A TLAČI\n\n';
-            
-            if (projectNumber) {
-                tableText += `Číslo zakázky: ${projectNumber}\n`;
-            }
-            if (projectName) {
-                tableText += `Názov zakázky: ${projectName}\n`;
-            }
-            if (projectManager) {
-                tableText += `Zodpovedný projektant: ${projectManager}\n`;
-            }
-            tableText += `Typ tlače: ${printTypeText}\n`;
-            tableText += `Počet požadovaných kópií: ${copies}`;
-            tableText += '\n\n';
-            tableText += 'PREHĽAD PDF SÚBOROV\n\n';
-            tableText += 'Č. | Názov súboru | Rozmer výkresu | Počet A4 | Spolu A4\n';
-            
-            rows.forEach((row) => {
-                if (!row.classList.contains('summary-row')) {
+            let emailBody = `Dobrý deň,
+
+posielam Vám výkaz plotrovania pre zákazku: ${projectNumber || '---'} - ${projectName || '---'}
+Zodpovedný projektant: ${projectManager || '---'}
+
+Informácie o tlači:
+Typ tlače: ${printTypeText}
+Počet kópií: ${copies}×
+
+`;
+
+            if (!standardTableSection.classList.contains('hidden')) {
+                emailBody += `\n📒 REPROGRAFICKÉ PRÁCE (${standardTableBody.querySelectorAll('tr:not(.summary-row)').length} súborov)\n\n`;
+                
+                const standardRows = standardTableBody.querySelectorAll('tr:not(.summary-row)');
+                standardRows.forEach((row) => {
                     const cells = row.querySelectorAll('td');
-                    const rowData = Array.from(cells).map(cell => cell.textContent.trim()).join(' | ');
-                    tableText += rowData + '\n';
-                }
-            });
-
-            const summaryRow = tableBody.querySelector('.summary-row');
-            if (summaryRow) {
-                const cells = summaryRow.querySelectorAll('td');
-                const totalA4 = cells[1] ? cells[1].textContent.trim() : '';
-                tableText += `\nCELKOVÝ POČET A4: ${totalA4}\n`;
+                    const num = cells[0]?.textContent.trim() || '';
+                    const filename = cells[1]?.textContent.trim() || '';
+                    const format = cells[2]?.textContent.trim() || '';
+                    const pages = cells[3]?.textContent.trim() || '';
+                    const a4count = cells[4]?.textContent.trim() || '';
+                    const total = cells[5]?.textContent.trim() || '';
+                    
+                    emailBody += `${filename}\n`;
+                    emailBody += `📐 ${format} | Počet stránok: ${pages} str. | Celkový počet: ${total}\n\n`;
+                });
             }
 
-            let emailSubject = 'Výkaz plotrovanie';
-            if (projectNumber && projectName) {
-                emailSubject = `Výkaz plotrovania: ${projectNumber} - ${projectName} (${copies} kópií)`;
-            } else if (projectNumber) {
-                emailSubject = `Výkaz plotrovania: ${projectNumber} (${copies} kópií)`;
-            } else if (projectName) {
-                emailSubject = `Výkaz plotrovania: ${projectName} (${copies} kópií)`;
-            } else {
-                emailSubject = `Výkaz plotrovania: (${copies} kópií)`;
+            if (!otherTableSection.classList.contains('hidden')) {
+                emailBody += `\n🖨 PLOTROVACIE PRÁCE (${otherTableBody.querySelectorAll('tr:not(.summary-row)').length} súborov)\n\n`;
+                
+                const otherRows = otherTableBody.querySelectorAll('tr:not(.summary-row)');
+                otherRows.forEach((row) => {
+                    const cells = row.querySelectorAll('td');
+                    const num = cells[0]?.textContent.trim() || '';
+                    const filename = cells[1]?.textContent.trim() || '';
+                    const format = cells[2]?.textContent.trim() || '';
+                    const pages = cells[3]?.textContent.trim() || '';
+                    const a4count = cells[4]?.textContent.trim() || '';
+                    const total = cells[5]?.textContent.trim() || '';
+                    
+                    emailBody += `${filename}\n`;
+                    emailBody += `📐 ${format} | Počet: ${a4count} | Celkový počet: ${total}\n\n`;
+                });
             }
-            const emailBody = `Dobrý deň,
 
-posielám Vám Výkaz plotrovania pre zákazku č.: ${projectNumber} - ${projectName}.
+            const standardSummary = standardTableBody.querySelector('.summary-row');
+            const otherSummary = otherTableBody.querySelector('.summary-row');
+            let grandTotal = 0;
+            
+            if (standardSummary) {
+                const totalText = standardSummary.querySelectorAll('td')[1]?.textContent.match(/(\d+)/)?.[1] || 0;
+                grandTotal += parseInt(totalText);
+            }
+            
+            if (otherSummary) {
+                const totalText = otherSummary.querySelectorAll('td')[1]?.textContent.match(/(\d+)/)?.[1] || 0;
+                grandTotal += parseInt(totalText);
+            }
 
-${tableText}
-${message ? 'POZNÁMKA\n' + message + '\n' : ''}
-Ďakujem a prajem pekný deň.`;
+            emailBody += `CELKOM: ${grandTotal.toLocaleString()}xA4 FORMÁTOV\n\n`;
+
+            if (message) {
+                emailBody += `💬 POZNÁMKA:\n${message}\n\n`;
+            }
+
+            emailBody += `Ďakujem a prajem pekný deň.`;
+
+            let emailSubject = `Výkaz plotrovania: ${projectNumber || ''} ${projectName ? '(' + projectName.substring(0, 25) + '...)' : ''} | ${grandTotal.toLocaleString()} A4`;
 
             const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
             window.location.href = mailtoLink;
             
-            showAlert(`Email pripravený pre ${email}.`, 'success');
+            showAlert(`Email pripravený! (${grandTotal.toLocaleString()} A4 celkom)`, 'success');
         }
 
         function resetApp() {
             const input = document.getElementById('email');
-            const user = 'mudrakova';      // Tu zadaj užívateľa
-            const domain = 'dopravoprojekt';       // Tu doménu
-            const tld = 'sk';            // Tu TLD
+            const user = 'mudrakova';
+            const domain = 'dopravoprojekt';
+            const tld = 'sk';
             const email = user + '@' + domain + '.' + tld;
         
             pdfFiles = [];
+            pdfData = [];
             fileInput.value = '';
             filesList.classList.add('hidden');
             tableSection.classList.add('hidden');
-            tableBody.innerHTML = '';
+            standardTableBody.innerHTML = '';
+            otherTableBody.innerHTML = '';
             document.getElementById('projectSelect').value = '';
             document.getElementById('projectNumber').value = '';
             document.getElementById('projectName').value = '';
@@ -680,7 +972,8 @@ ${message ? 'POZNÁMKA\n' + message + '\n' : ''}
             document.getElementById('message').value = '';
             alertContainer.innerHTML = '';
 
-            input.removeAttribute('readonly');  // Umožní editáciu ak treba
+            input.removeAttribute('readonly');
+            updateDeleteButton();
         }
 
         function showAlert(message, type) {
