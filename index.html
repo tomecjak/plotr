@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <link rel="icon" type="image/svg+xml" href="image/favicon.svg" sizes="any">
+    <link rel="icon" type="image/png" href="image/favicon.png" sizes="any">
     <title>Plotr</title>
     <style>
         :root {
@@ -67,13 +67,19 @@
             border-radius: 12px;
             padding: 3rem;
             text-align: center;
+            width: 60%;
+            margin: auto;
             margin-bottom: 2rem;
             transition: all 0.3s ease;
         }
 
+        .upload-section:hover {
+            border-color: var(--color-primary);
+            cursor: pointer;
+        }
+
         .upload-section.dragover {
             border-color: var(--color-primary);
-            background: rgba(33, 141, 141, 0.05);
         }
 
         .upload-icon {
@@ -222,7 +228,17 @@
             background: rgba(22, 79, 143, 0.2);
         }
 
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .form-row {
+            flex: 1;
+        }
+
         .form-group {
+            flex: 1;
             margin-bottom: 1.5rem;
         }
 
@@ -238,13 +254,20 @@
         select,
         textarea {
             width: 100%;
-            padding: 10px 12px;
+            padding: 7px 12px;
             border: 1px solid var(--color-border);
             border-radius: 8px;
             font-size: 1rem;
             background: var(--color-bg-secondary);
             color: var(--color-text-primary);
             font-family: inherit;
+            line-height: 1.5;
+        }
+
+        select,
+        option {
+            height: 40px;
+            line-height: 40px;
         }
 
         input[type="number"]:focus,
@@ -262,6 +285,7 @@
             border-radius: 12px;
             padding: 2rem;
             margin-top: 2rem;
+            margin-bottom: 2rem;
         }
 
         .hidden {
@@ -311,6 +335,16 @@
             gap: 0.5rem;
             align-items: center;
         }
+
+        .upload-icon {
+            display: block;
+            width: 64px;
+            height: 64px;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto 1rem;
+        }
+
     </style>
 </head>
 <body>
@@ -322,16 +356,13 @@
 
         <div id="alertContainer"></div>
 
-        <div class="upload-section" id="uploadSection">
-            <div class="upload-icon">📁</div>
+        <div class="upload-section clickable" id="uploadSection">
+            <img src="image/upload-icon.png" alt="Upload priečinok" class="upload-icon">
             <p style="margin-bottom: 1rem;">Pretiahnite PDF súbory sem alebo kliknite na tlačidlo</p>
             <div class="file-input-wrapper">
-                <input type="file" id="fileInput" accept=".pdf" multiple>
-                <label for="fileInput" class="btn">Vybrať PDF súbory</label>
+                <input type="file" id="fileInput" accept=".pdf" multiple style="display: none;">
             </div>
         </div>
-
-        <div id="filesList" class="files-list hidden"></div>
 
         <div id="tableSection" class="hidden">
             <div class="table-section" id="standardTableSection">
@@ -341,10 +372,10 @@
                         <tr>
                             <th>Č.</th>
                             <th>Názov súboru</th>
-                            <th>Rozmer</th>
-                            <th>Počet stránok</th>
-                            <th>Formát</th>
-                            <th>Spolu</th>
+                            <th style="text-align: center;">Rozmer</th>
+                            <th style="text-align: center;">Počet stránok</th>
+                            <th style="text-align: center;">Formát</th>
+                            <th style="text-align: center;">Spolu</th>
                         </tr>
                     </thead>
                     <tbody id="standardTableBody"></tbody>
@@ -358,10 +389,10 @@
                         <tr>
                             <th>Č.</th>
                             <th>Názov súboru</th>
-                            <th>Rozmer</th>
-                            <th>Počet stránok</th>
-                            <th>Formát</th>
-                            <th>Spolu</th>
+                            <th style="text-align: center;">Rozmer</th>
+                            <th style="text-align: center;">Počet stránok</th>
+                            <th style="text-align: center;">Formát</th>
+                            <th style="text-align: center;">Spolu</th>
                         </tr>
                     </thead>
                     <tbody id="otherTableBody"></tbody>
@@ -378,14 +409,16 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="projectNumber">Číslo zakázky:</label>
-                    <input type="text" id="projectNumber" placeholder="Zadajte číslo zakázky">
-                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="projectNumber">Číslo zakázky:</label>
+                        <input type="text" id="projectNumber" placeholder="Zadajte číslo zakázky">
+                    </div>
 
-                <div class="form-group">
-                    <label for="projectName">Názov zakázky:</label>
-                    <input type="text" id="projectName" placeholder="Zadajte názov zakázky">
+                    <div class="form-group">
+                        <label for="projectName">Názov zakázky:</label>
+                        <input type="text" id="projectName" placeholder="Zadajte názov zakázky">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -416,9 +449,18 @@
                     </select>
                 </div>
 
-                <div class="form-group" hidden>
+                <div class="form-group">
                     <label for="email">Email adresa príjemcu:</label>
                     <input type="email" id="email" readonly required>
+                </div>
+
+                <div class="form-group">
+                    <div class="button-group">
+                        <button class="btn btn-success btn-small" onclick="saveEmail()">Uložiť email</button>
+                    </div>
+                    <small style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">
+                        Email sa ukladá lokálne a bude predvyplnený pri ďalších návštevách stránky
+                    </small>
                 </div>
 
                 <div class="form-group">
@@ -438,6 +480,8 @@
             <p>Spracovávam PDF súbory...</p>
         </div>
 
+        <div id="filesList" class="files-list hidden"></div>
+
         <footer style="text-align: center; margin-top: 1rem;">
             <a href="https://github.com/tomecjak" style="color: var(--color-text-secondary); text-decoration: none;">VibeCode by Jakub 🤖</a>
         </footer>
@@ -446,14 +490,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const input = document.getElementById('email');
-            const user = 'mudrakova';
-            const domain = 'dopravoprojekt';
-            const tld = 'sk';
-            const email = user + '@' + domain + '.' + tld;
-            
-            input.value = email;
+
+            // load saved email if available (otherwise leave empty for user entry)
+            input.value = getSavedEmail();
             input.removeAttribute('readonly');
-            
+
+            // persist any changes when user edits
+            input.addEventListener('change', () => {
+                setSavedEmail(input.value);
+                showAlert('Email uložený lokálne.', 'success');
+            });
+
             loadSavedProjects();
         });
     </script>
@@ -477,6 +524,37 @@
         function getSavedProjects() {
             const saved = localStorage.getItem('plotr_projects');
             return saved ? JSON.parse(saved) : [];
+        }
+
+        document.querySelector('.upload-section.clickable').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        // Handle súbor výber (pre drag&drop pridaj separátne)
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            // Tu spracuj súbory, napr. loadFiles(e.target.files)
+            console.log('Vybrané súbory:', e.target.files);
+        });
+
+
+        // recipient email helpers
+        function getSavedEmail() {
+            return localStorage.getItem('plotr_recipient_email') || '';
+        }
+
+        function setSavedEmail(email) {
+            localStorage.setItem('plotr_recipient_email', email);
+        }
+
+        function saveEmail() {
+            const input = document.getElementById('email');
+            const value = input.value.trim();
+            if (!value) {
+                showAlert('Email nie je platný.', 'error');
+                return;
+            }
+            setSavedEmail(value);
+            showAlert('Email uložený.', 'success');
         }
 
         function setSavedProjects(projects) {
@@ -610,12 +688,16 @@
             }
 
             pdfFiles = files;
-            displayFilesList();
+            displayUploadSection();
             processingSection.classList.remove('hidden');
             
             setTimeout(() => {
                 processFiles();
             }, 500);
+
+            setTimeout(() => {
+                displayFilesList();
+            }, 550);
         }
 
         function displayFilesList() {
@@ -627,15 +709,19 @@
                 fileItem.className = 'file-item';
                 fileItem.innerHTML = `
                     <div class="file-info">
-                        <div class="file-name">📄 ${file.name}</div>
+                        <div class="file-name">${file.name}</div>
                         <div class="file-size">${formatFileSize(file.size)}</div>
                     </div>
                     <div class="file-actions">
-                        <button class="btn btn-small btn-secondary" onclick="removeFile(${index})">Odstrániť</button>
+                        <button class="btn btn-small btn-danger" onclick="removeFile(${index})">Odstrániť</button>
                     </div>
                 `;
                 filesList.appendChild(fileItem);
             });
+        }
+
+        function displayUploadSection() {
+            uploadSection.classList.add('hidden');
         }
 
         function removeFile(index) {
@@ -719,10 +805,10 @@
                         row.innerHTML = `
                             <td>${standardIndex}</td>
                             <td>${file.name}</td>
-                            <td>${pageSizeStr} (${formatCheck.formatName})</td>
-                            <td>${pageCount}</td>
-                            <td>${a4Count}x${formatCheck.formatName}</td>
-                            <td class="a4-total-cell">-</td>
+                            <td style="text-align: center;">${formatCheck.formatName}</td>
+                            <td style="text-align: center;">${pageCount}</td>
+                            <td style="text-align: center;">${a4Count}xA4</td>
+                            <td class="a4-total-cell" style="text-align: center;">-</td>
                         `;
                         standardTableBody.appendChild(row);
                         standardIndex++;
@@ -730,10 +816,10 @@
                         row.innerHTML = `
                             <td>${otherIndex}</td>
                             <td>${file.name}</td>
-                            <td>${pageSizeStr}</td>
-                            <td>${pageCount}</td>
-                            <td>${a4Count}xA4</td>
-                            <td class="a4-total-cell">-</td>
+                            <td style="text-align: center;">${pageSizeStr}</td>
+                            <td style="text-align: center;">${pageCount}</td>
+                            <td style="text-align: center;">${a4Count}xA4</td>
+                            <td class="a4-total-cell" style="text-align: center;">-</td>
                         `;
                         otherTableBody.appendChild(row);
                         otherIndex++;
@@ -841,7 +927,7 @@
 
             summaryRow.innerHTML = `
                 <td colspan="5" style="text-align: right; padding-right: 1rem;">CELKOM:</td>
-                <td>${total}xA4</td>
+                <td style="text-align: center;">${total}xA4</td>
             `;
         }
 
@@ -950,16 +1036,14 @@ Počet kópií: ${copies}×
 
         function resetApp() {
             const input = document.getElementById('email');
-            const user = 'mudrakova';
-            const domain = 'dopravoprojekt';
-            const tld = 'sk';
-            const email = user + '@' + domain + '.' + tld;
+            const saved = getSavedEmail();
         
             pdfFiles = [];
             pdfData = [];
             fileInput.value = '';
             filesList.classList.add('hidden');
             tableSection.classList.add('hidden');
+            uploadSection.classList.remove('hidden');
             standardTableBody.innerHTML = '';
             otherTableBody.innerHTML = '';
             document.getElementById('projectSelect').value = '';
@@ -968,7 +1052,7 @@ Počet kópií: ${copies}×
             document.getElementById('projectManager').value = '';
             document.getElementById('printType').value = 'finalna';
             document.getElementById('copies').value = '1';
-            document.getElementById('email').value = email;
+            document.getElementById('email').value = saved;
             document.getElementById('message').value = '';
             alertContainer.innerHTML = '';
 
