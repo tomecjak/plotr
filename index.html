@@ -12,11 +12,11 @@
             --color-bg-secondary: #ffffff;
             --color-text-primary: #13343b;
             --color-text-secondary: #626c7c;
-            --color-primary: #164f8f;
-            --color-primary-hover: #0B5BA4;
+            --color-primary: #FF8B5A;
+            --color-primary-hover: #ff6727;
             --color-border: rgba(94, 82, 64, 0.2);
-            --color-error: #c0152f;
-            --color-success: #164f8f;
+            --color-error: #FF5A5A;
+            --color-success: #FF8B5A;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -25,8 +25,8 @@
                 --color-bg-secondary: #262828;
                 --color-text-primary: #f5f5f5;
                 --color-text-secondary: #a7a9a9;
-                --color-primary: #164f8f;
-                --color-primary-hover: #0B5BA4;
+                --color-primary: #FF8B5A;
+                --color-primary-hover: #ff6727;
                 --color-border: rgba(119, 124, 124, 0.3);
             }
         }
@@ -61,10 +61,16 @@
             margin-bottom: 2rem;
         }
 
+        .logo-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
         .upload-section {
             background: var(--color-bg-secondary);
             border: 2px dashed var(--color-border);
-            border-radius: 12px;
+            border-radius: 20px;
             padding: 3rem;
             text-align: center;
             width: 60%;
@@ -74,12 +80,12 @@
         }
 
         .upload-section:hover {
-            border-color: var(--color-primary);
+            border-color: var(--color-error);
             cursor: pointer;
         }
 
         .upload-section.dragover {
-            border-color: var(--color-primary);
+            border-color: var(--color-error);
         }
 
         .upload-icon {
@@ -115,7 +121,6 @@
 
         .btn:hover {
             background: var(--color-primary-hover);
-            transform: translateY(-1px);
         }
 
         .btn:disabled {
@@ -148,7 +153,7 @@
         }
 
         .btn-danger:hover {
-            background: #a0122a;
+            background: #ff2727;
         }
 
         .files-list {
@@ -200,10 +205,11 @@
         }
 
         table {
+            border-spacing: 0; 
             width: 100%;
-            border-collapse: collapse;
             background: var(--color-bg-secondary);
-            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
             overflow: hidden;
             margin-bottom: 2rem;
         }
@@ -215,7 +221,7 @@
         }
 
         th {
-            background: rgba(22, 79, 143, 0.2);
+            
             font-weight: 600;
         }
 
@@ -225,7 +231,7 @@
 
         .summary-row {
             font-weight: bold;
-            background: rgba(22, 79, 143, 0.2);
+            
         }
 
         .form-row {
@@ -275,7 +281,7 @@
         input[type="text"]:focus,
         select:focus,
         textarea:focus {
-            outline: 2px solid var(--color-primary);
+            outline: 2px solid #FFA95A;
             border-color: var(--color-primary);
         }
 
@@ -299,15 +305,15 @@
         }
 
         .alert-success {
-            background: rgba(22, 79, 143, 0.2);
-            color: var(--color-success);
-            border: 1px solid var(--color-success);
+            background: rgba(255, 169, 90, 1);
+            color: white;
+            border: 1px solid rgba(255, 169, 90, 1);
         }
 
         .alert-error {
-            background: rgba(192, 21, 47, 0.1);
-            color: var(--color-error);
-            border: 1px solid var(--color-error);
+            background: rgba(192, 21, 47, 1);
+            color: white;
+            border: 1px solid rgba(192, 21, 47, 1);
         }
 
         .processing {
@@ -345,20 +351,27 @@
             margin: 0 auto 1rem;
         }
 
+        .logo {
+            height:80px;      /* Fixná výška */
+            width: auto;       /* Prispôsobí šírke */
+            max-height: 80px;  /* Responsívne limit */
+        }
+
     </style>
 </head>
 <body>
+    <header style="text-align: center;">
+        <a href="https://tomecjak.github.io/plotr/"><img src="image/logo.svg" alt="plotr logo" class="logo"></a>
+        <p class="logo-subtitle">Print Like Orc, Then Relax</p>
+    </header>
+
     <div class="container">
-        <div style="text-align: center;">
-            <h1>PLOTR β</h1>
-            <p class="subtitle">Print Like Orc, Then Relax</p>
-        </div>
 
         <div id="alertContainer"></div>
 
         <div class="upload-section clickable" id="uploadSection">
             <img src="image/upload-icon.png" alt="Upload priečinok" class="upload-icon">
-            <p style="margin-bottom: 1rem;">Pretiahnite PDF súbory sem alebo kliknite na tlačidlo</p>
+            <p>Vyberte PDF súbory alebo ich pretiahnite sem</p>
             <div class="file-input-wrapper">
                 <input type="file" id="fileInput" accept=".pdf" multiple style="display: none;">
             </div>
@@ -482,10 +495,11 @@
 
         <div id="filesList" class="files-list hidden"></div>
 
-        <footer style="text-align: center; margin-top: 1rem;">
-            <a href="https://github.com/tomecjak" style="color: var(--color-text-secondary); text-decoration: none;">VibeCode by Jakub 🤖</a>
-        </footer>
     </div>
+
+    <footer style="text-align: center; margin-top: 1rem;">
+        <a href="https://github.com/tomecjak" style="color: var(--color-text-secondary); text-decoration: none;">VibeCode by Jakub 🤖</a>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -700,26 +714,6 @@
             }, 550);
         }
 
-        function displayFilesList() {
-            filesList.innerHTML = '';
-            filesList.classList.remove('hidden');
-            
-            pdfFiles.forEach((file, index) => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                fileItem.innerHTML = `
-                    <div class="file-info">
-                        <div class="file-name">${file.name}</div>
-                        <div class="file-size">${formatFileSize(file.size)}</div>
-                    </div>
-                    <div class="file-actions">
-                        <button class="btn btn-small btn-danger" onclick="removeFile(${index})">Odstrániť</button>
-                    </div>
-                `;
-                filesList.appendChild(fileItem);
-            });
-        }
-
         function displayUploadSection() {
             uploadSection.classList.add('hidden');
         }
@@ -854,6 +848,26 @@
             tableSection.classList.remove('hidden');
             showAlert(`Úspešne spracovaných ${pdfFiles.length} PDF súborov.`, 'success');
             updateA4Totals();
+        }
+
+        function displayFilesList() {
+            filesList.innerHTML = '';
+            filesList.classList.remove('hidden');
+            
+            pdfFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-small btn-danger" onclick="removeFile(${index})">Odstrániť</button>
+                    </div>
+                `;
+                filesList.appendChild(fileItem);
+            });
         }
 
         function loadProjectData() {
