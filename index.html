@@ -701,8 +701,10 @@
                 return;
             }
 
-            pdfFiles = files;
-            displayUploadSection();
+            // Pridať nové súbory k existujúcim namiesto prepísania
+            pdfFiles = [...pdfFiles, ...files];
+            // displayUploadSection(); // Odstránené, aby upload sekcia zostala viditeľná pre ďalšie pridanie
+            
             processingSection.classList.remove('hidden');
             
             setTimeout(() => {
